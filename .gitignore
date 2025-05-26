@@ -1,24 +1,1208 @@
-# Compiled class file
-*.class
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha seu Jogo Pokémon</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #d0f0ff;
+            color: #222;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
 
-# Log file
-*.log
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            z-index: 1;
+            position: relative;
+        }
 
-# BlueJ files
-*.ctxt
+        .corner {
+            position: fixed;
+            width: 64px;
+            height: 64px;
+            image-rendering: pixelated;
+            z-index: 0;
+        }
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+        .top-left {
+            top: 10px;
+            left: 10px;
+        }
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+        .top-right {
+            top: 10px;
+            right: 10px;
+        }
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+        .bottom-left {
+            bottom: 10px;
+            left: 10px;
+        }
+
+        .bottom-right {
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .game-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+            z-index: 1;
+            position: relative;
+        }
+
+        .game-btn {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 1rem;
+            background: #ffcc00;
+            color: #222;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .game-btn:hover {
+            background: #ffb800;
+            transform: translateY(-0.1rem);
+        }
+
+        .game-btn:active {
+            background: #ff9e00;
+            transform: translateY(0);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+        }
+
+        #roulette-container {
+            display: none;
+            margin-top: 2rem;
+            align-items: center;
+            flex-direction: column;
+            width: fit-content;
+            position: relative;
+            z-index: 2;
+        }
+
+        #wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .arrow {
+            position: absolute;
+            right: -70px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-right: 30px solid #222; 
+            z-index: 10;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #333;
+            position: relative;
+            overflow: hidden;
+            background: #333;
+        }
+
+        .inner-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: conic-gradient(
+                #ff6b6b 0deg 90deg,
+                #42a5f5 90deg 180deg,
+                #66bb6a 180deg 270deg,
+                #ffeb3b 270deg 360deg
+            );
+        }
+
+        .label-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .label {
+            position: absolute;
+            transform-origin: center center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .label:nth-child(1) { transform: rotate(45deg) translateY(-160px); } /* Shiny Run */
+        .label:nth-child(2) { transform: rotate(135deg) translateY(-160px); } /* Monotype */
+        .label:nth-child(3) { transform: rotate(225deg) translateY(-160px); } /* Nuzlocke */
+        .label:nth-child(4) { transform: rotate(315deg) translateY(-160px); } /* Normal */
+
+
+        #spin {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            color: #333;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            font-size: 24px;
+            border: 4px solid #333;
+        }
+
+        #spin:hover {
+            background: #eee;
+        }
+
+        #result {
+            margin-top: 30px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            font-family: 'Press Start 2P', monospace;
+            padding: 10px 20px;
+            border: 4px solid #333;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            display: none;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: visible;
+            margin-top: 2rem;
+            width: fit-content;
+        }
+
+        #type-roulette-container {
+            display: none;
+            margin-top: 2rem;
+            align-items: center;
+            flex-direction: column;
+            width: fit-content;
+            position: relative;
+            z-index: 3;
+        }
+
+        #type-wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .type-arrow {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-left: 30px solid #333;
+            z-index: 10;
+        }
+
+        #type-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #333;
+            position: relative;
+            overflow: hidden;
+            background: #333;
+        }
+
+        .type-inner-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: conic-gradient(
+                #a8a878 0deg 20deg,  /* Normal     */
+                #b8a038 20deg 40deg,  /* Rock       */
+                #f85888 40deg 60deg,  /* Psychic    */
+                #f08030 60deg 80deg,  /* Fire       */
+                #78c850 80deg 100deg, /* Grass      */
+                #c03028 100deg 120deg, /* Fighting   */
+                #a040a0 120deg 140deg, /* Poison     */
+                #a890f0 140deg 160deg, /* Flying     */
+                #6890f0 160deg 180deg, /* Water      */
+                #a8b820 180deg 200deg, /* Bug        */
+                #f8d030 200deg 220deg, /* Electric   */
+                #e0c068 220deg 240deg, /* Ground     */
+                #98d8d8 240deg 260deg, /* Ice       */
+                #b8b8d0 260deg 280deg, /* Steel      */
+                #ee99ee 280deg 300deg, /* Fairy      */
+                #7038f8 300deg 320deg, /* Dragon     */
+                #705848 320deg 340deg, /* Dark       */
+                #705898 340deg 360deg  /* Ghost      */
+            );
+        }
+
+        .type-label-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .type-label {
+            position: absolute;
+            transform-origin: center center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        .type-label:nth-child(1) { transform: rotate(10deg) translateY(-180px); } 
+        .type-label:nth-child(2) { transform: rotate(30deg) translateY(-180px); } 
+        .type-label:nth-child(3) { transform: rotate(50deg) translateY(-180px); } 
+        .type-label:nth-child(4) { transform: rotate(70deg) translateY(-180px); } 
+        .type-label:nth-child(5) { transform: rotate(90deg) translateY(-180px); } 
+        .type-label:nth-child(6) { transform: rotate(110deg) translateY(-180px); } 
+        .type-label:nth-child(7) { transform: rotate(130deg) translateY(-180px); } 
+        .type-label:nth-child(8) { transform: rotate(150deg) translateY(-180px); } 
+        .type-label:nth-child(9) { transform: rotate(170deg) translateY(-180px); } 
+        .type-label:nth-child(10){ transform: rotate(190deg) translateY(-180px); } 
+        .type-label:nth-child(11){ transform: rotate(210deg) translateY(-180px); } 
+        .type-label:nth-child(12){ transform: rotate(230deg) translateY(-180px); } 
+        .type-label:nth-child(13){ transform: rotate(250deg) translateY(-180px); } 
+        .type-label:nth-child(14){ transform: rotate(270deg) translateY(-180px); } 
+        .type-label:nth-child(15){ transform: rotate(290deg) translateY(-180px); } 
+        .type-label:nth-child(16){ transform: rotate(310deg) translateY(-180px); } 
+        .type-label:nth-child(17){ transform: rotate(330deg) translateY(-180px); } 
+        .type-label:nth-child(18){ transform: rotate(350deg) translateY(-180px); } 
+
+
+        #spin-type {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            color: #333;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            font-size: 24px;
+            border: 4px solid #333;
+        }
+
+        #spin-type:hover {
+            background: #eee;
+        }
+
+        .pokemon-roulette-container {
+            display: flex;
+            margin-top: 2rem;
+            align-items: center;
+            flex-direction: column;
+            width: fit-content;
+            position: relative;
+            z-index: 4; 
+        }
+
+        .pokemon-wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .pokemon-arrow {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-left: 30px solid #333;
+            z-index: 10;
+        }
+
+        .pokemon-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #333;
+            position: relative;
+            overflow: hidden;
+            background: #333; /* Cor de fundo padrão */
+        }
+
+        .pokemon-inner-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .pokemon-label-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .pokemon-label {
+            position: absolute;
+            transform-origin: center center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px; 
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            overflow: hidden; 
+            max-width: 90%; 
+        }
+
+        .spin-pokemon {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            color: #333;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            font-size: 24px;
+            border: 4px solid #333;
+        }
+
+        .spin-pokemon:hover {
+            background: #eee;
+        }
+
+        .result-pokemon {
+            margin-top: 30px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            font-family: 'Press Start 2P', monospace;
+            padding: 10px 20px;
+            border: 4px solid #333;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            display: none;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: visible;
+            width: fit-content;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .result-pokemon img {
+            margin-top: 10px;
+            image-rendering: pixelated; 
+            width: 96px; 
+            height: 96px;
+        }
+
+        .go-back-btn {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 1rem;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .go-back-btn:hover {
+            background: #0056b3;
+            transform: translateY(-0.1rem);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    </style>
+</head>
+<body>
+    <h1>Escolha seu Jogo Pokémon</h1>
+    <img src="https://play.pokemonshowdown.com/sprites/gen5/dragapult.png" alt="Dragapult" class="corner top-left">
+    <img src="https://play.pokemonshowdown.com/sprites/gen5/dragonite.png" alt="Dragonite" class="corner top-right">
+    <img src="https://play.pokemonshowdown.com/sprites/gen5/gengar.png" alt="Gengar" class="corner bottom-left">
+    <img src="https://play.pokemonshowdown.com/sprites/gen5/charizard.png" alt="Charizard" class="corner bottom-right">
+    <div class="game-grid">
+        <button class="game-btn" data-game="Pokémon X">Pokémon X</button>
+        <button class="game-btn" data-game="Pokémon Y">Pokémon Y</button>
+        <button class="game-btn" data-game="Pokémon Omega Ruby">Pokémon Omega Ruby</button>
+        <button class="game-btn" data-game="Pokémon Alpha Sapphire">Pokémon Alpha Sapphire</button>
+        <button class="game-btn" data-game="Pokémon Moon">Pokémon Moon</button>
+        <button class="game-btn" data-game="Pokémon Sun">Pokémon Sun</button>
+        <button class="game-btn" data-game="Pokémon Sword">Pokémon Sword</button>
+        <button class="game-btn" data-game="Pokémon Scarlet">Pokémon Scarlet</button>
+        <button class="game-btn" data-game="Pokémon Violet">Pokémon Violet</button>
+        <button class="game-btn" data-game="Pokémon Legends: Arceus">Pokémon Legends: Arceus</button>
+    </div>
+
+    <div id="roulette-container">
+        <div id="wrapper">
+            <div class="arrow"></div>
+            <div id="wheel">
+                <div class="inner-wheel" id="inner-wheel">
+                    <div class="label-container">
+                        <div class="label">Shiny Run</div>
+                        <div class="label">Monotype</div>
+                        <div class="label">Nuzlocke</div>
+                        <div class="label">Normal</div>
+                    </div>
+                </div>
+                <div id="spin" onclick="spinwheel()">Girar</div>
+            </div>
+        </div>
+        <div id="result">
+            <span></span>
+        </div>
+    </div>
+
+    <div id="type-roulette-container">
+        <div id="type-wrapper">
+            <div class="type-arrow"></div>
+            <div id="type-wheel">
+                <div class="type-inner-wheel" id="type-inner-wheel">
+                    <div class="type-label-container">
+                        <div class="type-label">Normal</div>
+                        <div class="type-label">Rock</div>
+                        <div class="type-label">Psychic</div>
+                        <div class="type-label">Fire</div>
+                        <div class="type-label">Grass</div>
+                        <div class="type-label">Fighting</div>
+                        <div class="type-label">Poison</div>
+                        <div class="type-label">Flying</div>
+                        <div class="type-label">Water</div>
+                        <div class="type-label">Bug</div>
+                        <div class="type-label">Electric</div>
+                        <div class="type-label">Ground</div>
+                        <div class="type-label">Ice</div>
+                        <div class="type-label">Steel</div>
+                        <div class="type-label">Fairy</div>
+                        <div class="type-label">Dragon</div>
+                        <div class="type-label">Dark</div>
+                        <div class="type-label">Ghost</div>
+                    </div>
+                </div>
+                <div id="spin-type" onclick="spinTypeWheel()">Girar</div>
+            </div>
+        </div>
+        </div>
+
+    <div id="all-pokemon-roulettes" style="display: none; flex-direction: column; align-items: center; margin-top: 2rem;">
+        </div>
+
+    <script>
+        let selectedGame = '';
+        let rotation = 0;
+        let hasSpun = false;
+        let typeRotation = 0;
+        let hasTypeSpun = false;
+
+        const kalosPokemonByRegionAndType = {
+            "Pokémon X": {
+                "Normal": ["Bunnelby","Diggersby","Zigzagoon","Linoone", "Fletchling","Fletchinder","Talonflame","Pidgey","Pidgeotto","Pidgeot","Bidoof" ,"Bibarel","Dunsparce","Azurill","Litleo","Pyroar","Farfetch'd","Skitty","Delcatty","Furfrou","Doduo","Dodrio","Sentret","Furret","Kecleon","Munchlax", "Whismur","Loudred","Exploud", "Kangaskhan", "Eevee", "Snorlax", "Ditto", "Smeargle", "Audino"],
+                "Fire": ["Fennekin","Braixen","Delphox","Litleo","Pyroar", "Fletchinder","Talonflame","Pansear","Simisear", "Charmander","Charmeleon","Charizard", "Houndour","Houndoom","Flareon","Slugma","Magcargo", "Litwick", "Lampeant","Chandelure", "Torkoal", "Heatmor"],
+                "Water": ["Froakie","Frogadier","Greninja","Panpour","Simipour","Bibarel","Surskit","Corphish","Crawdant","Goldeen","Seaking","Carvanha","Sharpedo","Psyduck","Golduck", "Squirtle","Wartotle","Blastoise","Duckett","Swanna","Wingull","Pelipper","Binacle","Barbaracle","Tentacool","Tentacruel","Waimer","Wailord","Luvidisc", "Clauncher","Clawitzer", "Skrelp", "Marill","Azumarill", "Staryu","Starmie", "Sheldder","Cloyster","Qwilfish","Horsea","Seadra","Kingdra","Relicanth","Vaporeon","Slowpoke","Slowbro","Slowking","Mantyke","Mantine","Clampearl","Huntail","Gorebyss","Remoraid","Octillery","Corsola","Chinchou","Lanturn","Alomomola", "Lapras", "Magikarp","Gyarados","Poliwag","Poliwhirl","Poliwrath","Politoed","Barboach","Whiscash","Lotad","Lombre","Ludicolo","Buizel","Floatzel","Basculin"],
+                "Grass": ["Chespin","Quiladin","Chesnaught","Pansage","Simisage","Wormadam","Budew","Roselia","Roserade","Skiddo","Gogoat", "Pansage", "Bulbasaur","Ivysaur","Venusaur","Oddish","Gloom","Vileplume","Bellossom","Hoppip","Skiploom","Jumpluff","Ferroseed","Ferrothorn","Leafeon","Exeggcute","Exeggutor", "Bellsprout","Weepinbell","Victreebel","Carnivine","Foongus","Amoonguss","Lotad","Lombre","Ludicolo","Trevenant","Pumpkaboo","Gourgeist","Snover","Abomasnow","Phantump"],
+                "Electric": ["Pichu","Pikachu", "Raichu","Minum", "Plusle","Helioptile","Heliolisk","Electrike", "Manectric","Jolteon", "Emolga", "Dedenne","Mareep","Flaaffy","Ampharos","Stunfisk","Voltorb","Electrode", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom"],
+                "Ice": ["Bergmite", "Cryogonal", "Snover", "Swinub", "Lapras", "Vanillite", "Vanillish", "Vanilluxe", "Spheal", "Sealeo", "Walrein", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Pancham", "Hawlucha", "Mienfoo", "Riolu", "Scraggy", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Meditite", "Medicham", "Scrafty", "Heracross", "Lucario", "Pangoro", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Wedlee","Kakuna","Beedrill","Budew","Roselia","Roserade","Bulbasaur","Ivysaur","Venusaur","Gulpin","Swalot","Skrelp", "Croagunk", "Trubbish", "Nidoran♀", "Zubat", "Oddish","Gloom","Vileplume","Venipede","Whirlipede","Scolipede","Toxicroak","Crobat","Golbat","Seviper","Tentacool","Tentacruel","Dragalge","Qwilfish","Stunky","Skuntank","Nidoran","Nidorina","Nidoqueen","Nidoran","Nidorino","Nidoking","Skorupi","Drapion","Gastly","Haunter","Gengar","Bellsprout","Weepinbell","Victreebel","Ekans","Arbok","Foongus","Amoonguss","Trubbish","Garbodor","Spinarak","Ariados"],
+                "Ground": ["Diggersby","Nincada","Sandile","Krokorok","Krookodile","Hippopotas","Hippowdon","Sandshrew", "Rhyhorn","Rhydon","Rhyperior","Onix","Steelix","Cubone","Marowak","Trapinch","Vibrava","Flygon", "Gible","Gabite","Garchoomp", "Golett","Golurk","Nidoqueen","Nidoking","Diglett","Dugtrio","Geodude","Graveler","Golem","Wooper","Stunfisk","Barboach","Whiscash","Swinub","Piloswine","Mamoswine","Sandshrew","Sandslash","Larvitar","Pupitar","Gligar","Gliscor"],
+                "Flying": ["Fletchling","Fletchinder", "Talonflame","Pidgey","Pidgeotto","Pidgeot","Vivillon","Butterfree","Mothim","Masquerain","Gyarados","Farfetch'd","Ledyba","Ledian","Combee","Vespiquen","Charizard","Doduo","Dodrio","Ninjask","Ducklett","Swanna","Hoppip","Skiploom","Jumpluff","Zubat","Golbat","Crobat","Drifloon","Drifblim","Salamence","Wingull","Pelipper","Taillow","Swellow","Woobat","Swoobat","Aerodactyl","Emolga","Yanma","Yanmega","Sigilyph","Starly","Staravia","Staraptor","Chatot","Mantyke","Mantine","Murkrow","Honchkrow","Delibird","Spearow","Fearow","Skarmory","Noivern","Gligar","Gliscor","Hoothoot","Noctowl","Scyther","Swablu","Altaria","Dragonite", "Hawlucha", "Noibat"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle"],
+                "Bug": ["Scatterbug","Spewpa","Vivillon","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Burmy","Wormadam","Mothim","Masquerain", "Surskit","Ledyba","Ledian","Combee","Vespiquen","Nincada","Ninjask","Shedinja","Venipede","Whirlipede","Scolipede","Illumise","Dwebble","Crustle","Yanma","Yanmega","Pinsir","Heracross","Shuckle","Skorupi","Karrablast","Escavalier","Shelmet","Accelgor","Durant","Spinarak","Ariados","Scyther","Scizor","Volbeat", "Combee", "Dwebble", "Scyther"],
+                "Rock": ["Bonsly", "Sudowoodo","Lunatone","Solrock","Binacle","Barbaracle","Dwebble","Crustle","Relicanth", "Tyrunt","Tyrantrum","Amaura","Aurorus","Nosepass","Probopass","Roggenrola","Boldore","Gigalith","Carbink","Corsola","Geodude","Graveler","Golem","Magcargo","Shuckle","Aron","Lairon","Aggron","Larvitar","Larvitar","Tyranitar", "Rhyhorn","Rhydon","Rhyperior", "Onix", "Aerodactyl", "Larvitar", "Carbink"],
+                "Ghost": ["Shedinja", "Honedge","Doublade","Aegislash","Drifloon","Drifblim","Phantump","Trevenant", "Golett","Golurk","Sableye","Gastly","Haunter","Gengar","Pumpkaboo","Gourgeist", "Litwick","Lampent","Chandelure","Rotom","Shuppet","Banette"],
+                "Dragon": ["Goomy", "Noibat", "Druddigon", "Gible", "Dratini", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noivern", "Altaria", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Honedge","Doublade","Aegislash","Steelix","Mawile","Ferrothorn","Probopass","Escavalier","Pawniard","Bisharp","Klefki", "Aegislash", "Mawile", "Magnemite","Magneton","Magnezone","Aron","Lairon","Aggron","Durant","Skarmory","Scizor", "Ferroseed"],
+                "Dark": ["Pangoro", "Inkay", "Zoroark", "Purrloin", "Scraggy", "Houndour", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Scrafty", "Absol", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndoom", "Umbreon", "Stunky", "Skuntank", "Sableye", "Drapion", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Sneasel", "Weavile", "Tyranitar", "Zorua", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+                "Pokémon Y": {
+                "Normal": ["Bunnelby","Diggersby","Zigzagoon","Linoone", "Fletchling","Fletchinder","Talonflame","Pidgey","Pidgeotto","Pidgeot","Bidoof" ,"Bibarel","Dunsparce","Azurill","Litleo","Pyroar","Farfetch'd","Skitty","Delcatty","Furfrou","Doduo","Dodrio","Sentret","Furret","Kecleon","Munchlax", "Whismur","Loudred","Exploud", "Kangaskhan", "Eevee", "Snorlax", "Ditto", "Smeargle", "Audino"],
+                "Fire": ["Fennekin","Braixen","Delphox","Litleo","Pyroar", "Fletchinder","Talonflame","Pansear","Simisear", "Charmander","Charmeleon","Charizard", "Houndour","Houndoom","Flareon","Slugma","Magcargo", "Litwick", "Lampeant","Chandelure", "Torkoal", "Heatmor"],
+                "Water": ["Froakie","Frogadier","Greninja","Panpour","Simipour","Bibarel","Surskit","Corphish","Crawdant","Goldeen","Seaking","Carvanha","Sharpedo","Psyduck","Golduck", "Squirtle","Wartotle","Blastoise","Duckett","Swanna","Wingull","Pelipper","Binacle","Barbaracle","Tentacool","Tentacruel","Waimer","Wailord","Luvidisc", "Clauncher","Clawitzer", "Skrelp", "Marill","Azumarill", "Staryu","Starmie", "Sheldder","Cloyster","Qwilfish","Horsea","Seadra","Kingdra","Relicanth","Vaporeon","Slowpoke","Slowbro","Slowking","Mantyke","Mantine","Clampearl","Huntail","Gorebyss","Remoraid","Octillery","Corsola","Chinchou","Lanturn","Alomomola", "Lapras", "Magikarp","Gyarados","Poliwag","Poliwhirl","Poliwrath","Politoed","Barboach","Whiscash","Lotad","Lombre","Ludicolo","Buizel","Floatzel","Basculin"],
+                "Grass": ["Chespin","Quiladin","Chesnaught","Pansage","Simisage","Wormadam","Budew","Roselia","Roserade","Skiddo","Gogoat", "Pansage", "Bulbasaur","Ivysaur","Venusaur","Oddish","Gloom","Vileplume","Bellossom","Hoppip","Skiploom","Jumpluff","Ferroseed","Ferrothorn","Leafeon","Exeggcute","Exeggutor", "Bellsprout","Weepinbell","Victreebel","Carnivine","Foongus","Amoonguss","Lotad","Lombre","Ludicolo","Trevenant","Pumpkaboo","Gourgeist","Snover","Abomasnow","Phantump"],
+                "Electric": ["Pichu","Pikachu", "Raichu","Minum", "Plusle","Helioptile","Heliolisk","Electrike", "Manectric","Jolteon", "Emolga", "Dedenne","Mareep","Flaaffy","Ampharos","Stunfisk","Voltorb","Electrode", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom"],
+                "Ice": ["Bergmite", "Cryogonal", "Snover", "Swinub", "Lapras", "Vanillite", "Vanillish", "Vanilluxe", "Spheal", "Sealeo", "Walrein", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Pancham", "Hawlucha", "Mienfoo", "Riolu", "Scraggy", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Meditite", "Medicham", "Scrafty", "Heracross", "Lucario", "Pangoro", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Wedlee","Kakuna","Beedrill","Budew","Roselia","Roserade","Bulbasaur","Ivysaur","Venusaur","Gulpin","Swalot","Skrelp", "Croagunk", "Trubbish", "Nidoran♀", "Zubat", "Oddish","Gloom","Vileplume","Venipede","Whirlipede","Scolipede","Toxicroak","Crobat","Golbat","Seviper","Tentacool","Tentacruel","Dragalge","Qwilfish","Stunky","Skuntank","Nidoran","Nidorina","Nidoqueen","Nidoran","Nidorino","Nidoking","Skorupi","Drapion","Gastly","Haunter","Gengar","Bellsprout","Weepinbell","Victreebel","Ekans","Arbok","Foongus","Amoonguss","Trubbish","Garbodor","Spinarak","Ariados"],
+                "Ground": ["Diggersby","Nincada","Sandile","Krokorok","Krookodile","Hippopotas","Hippowdon","Sandshrew", "Rhyhorn","Rhydon","Rhyperior","Onix","Steelix","Cubone","Marowak","Trapinch","Vibrava","Flygon", "Gible","Gabite","Garchoomp", "Golett","Golurk","Nidoqueen","Nidoking","Diglett","Dugtrio","Geodude","Graveler","Golem","Wooper","Stunfisk","Barboach","Whiscash","Swinub","Piloswine","Mamoswine","Sandshrew","Sandslash","Larvitar","Pupitar","Gligar","Gliscor"],
+                "Flying": ["Fletchling","Fletchinder", "Talonflame","Pidgey","Pidgeotto","Pidgeot","Vivillon","Butterfree","Mothim","Masquerain","Gyarados","Farfetch'd","Ledyba","Ledian","Combee","Vespiquen","Charizard","Doduo","Dodrio","Ninjask","Ducklett","Swanna","Hoppip","Skiploom","Jumpluff","Zubat","Golbat","Crobat","Drifloon","Drifblim","Salamence","Wingull","Pelipper","Taillow","Swellow","Woobat","Swoobat","Aerodactyl","Emolga","Yanma","Yanmega","Sigilyph","Starly","Staravia","Staraptor","Chatot","Mantyke","Mantine","Murkrow","Honchkrow","Delibird","Spearow","Fearow","Skarmory","Noivern","Gligar","Gliscor","Hoothoot","Noctowl","Scyther","Swablu","Altaria","Dragonite", "Hawlucha", "Noibat"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle"],
+                "Bug": ["Scatterbug","Spewpa","Vivillon","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Burmy","Wormadam","Mothim","Masquerain", "Surskit","Ledyba","Ledian","Combee","Vespiquen","Nincada","Ninjask","Shedinja","Venipede","Whirlipede","Scolipede","Illumise","Dwebble","Crustle","Yanma","Yanmega","Pinsir","Heracross","Shuckle","Skorupi","Karrablast","Escavalier","Shelmet","Accelgor","Durant","Spinarak","Ariados","Scyther","Scizor","Volbeat", "Combee", "Dwebble", "Scyther"],
+                "Rock": ["Bonsly", "Sudowoodo","Lunatone","Solrock","Binacle","Barbaracle","Dwebble","Crustle","Relicanth", "Tyrunt","Tyrantrum","Amaura","Aurorus","Nosepass","Probopass","Roggenrola","Boldore","Gigalith","Carbink","Corsola","Geodude","Graveler","Golem","Magcargo","Shuckle","Aron","Lairon","Aggron","Larvitar","Larvitar","Tyranitar", "Rhyhorn","Rhydon","Rhyperior", "Onix", "Aerodactyl", "Larvitar", "Carbink"],
+                "Ghost": ["Shedinja", "Honedge","Doublade","Aegislash","Drifloon","Drifblim","Phantump","Trevenant", "Golett","Golurk","Sableye","Gastly","Haunter","Gengar","Pumpkaboo","Gourgeist", "Litwick","Lampent","Chandelure","Rotom","Shuppet","Banette"],
+                "Dragon": ["Goomy", "Noibat", "Druddigon", "Gible", "Dratini", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noivern", "Altaria", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Honedge","Doublade","Aegislash","Steelix","Mawile","Ferrothorn","Probopass","Escavalier","Pawniard","Bisharp","Klefki", "Aegislash", "Mawile", "Magnemite","Magneton","Magnezone","Aron","Lairon","Aggron","Durant","Skarmory","Scizor", "Ferroseed"],
+                "Dark": ["Pangoro", "Inkay", "Zoroark", "Purrloin", "Scraggy", "Houndour", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Scrafty", "Absol", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndoom", "Umbreon", "Stunky", "Skuntank", "Sableye", "Drapion", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Sneasel", "Weavile", "Tyranitar", "Zorua", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Omega Ruby": {
+                "Normal": ["Zigzagoon","Linoone","vigoroth","Slaking","Taillow","Swellow","Loudred","Exploud","Azurill","Marill","Delcatty","Doduo","Dodrio","Zangoose","Igglybuff","Jigglypuff","Wigglytuff","Girafarig","Slakoth", "Whismur", "Skitty", "Kecleon", "Plusle", "Minun", "Castform", "Spinda", "Swablu"],
+                "Fire": ["Torchic","Combusken","Blaziken","Camerupt","Magcargo","Ninetales","Numel", "Torkoal", "Slugma", "Vulpix"],
+                "Water": ["Mudkip","Marshtomp","Swampert","Lombre","Ludicolo","Pelipper","Goldeen","Seaking","Magikarp","Gyarados","Marill","Azumarill","Tentacool","Tentacruel","Carvanha","Sharpedo","Wailmer","Wailord","Whiscash","Crawdaunt","Feebas","Milotic","Staryu","Starmie","Psyduck","Golduck","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Corsola","Chinchou","Lanturn","Luvdisc","Horsea","Kingdra","Seadra","Wingull", "Pelipper", "Lotad", "Surskit", "Corphish", "Barboach", "Wailmer", "Relicanth"],
+                "Grass": ["Treecko","Grovyle","Sceptile","Lombre","Ludicolo","Nuzleaf","Shiftry","Breloom","Gloom","Vileplume","Bellossom","Budew","Roserade","Cacnea","Cacturne","Lileep","Cradily","Tropius", "Shroomish", "Oddish", "Lotad", "Seedot", "Roselia"],
+                "Electric": ["Pikachu", "Raichu","Plusle","Minun","Voltorb","Electrode","Pichu","Pikachu","Raichu","Chinchou","Lanturn","Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom"],
+                "Ice": ["Snorunt","Glalie","Froslass","Spheal", "Sealeo", "Walrein",],
+                "Fighting": ["Makuhita","Combusken","Blaziken", "Meditite", "Breloom", "Hariyama","Gallade","Machop","Machamp","Machoke","Medicham","Heracross"],
+                "Poison": ["Gulpin", "Grimer", "Koffing", "Oddish", "Tentacool","Dustox","Zubat","Golbat","Crobat","Tentacruel","Gloom","Vileplume","Budew","Roselia","Roserade","Swalot","Muk","Weezing","Seviper"],
+                "Ground": ["Marshtomp","Swampert","Nincada","Geodude","Graveler","Golem","Camerupt","Sandslash","Vibrava","Flygon","Barboach","Whiscash","Baltoy","Claydol","Phanpy","Donphan","Rhyhorn","Rhydon","Rhyperior", "Trapinch", "Baltoy", "Diglett", "Sandshrew", "Numel", "Larvitar"],
+                "Flying": ["Beautifly","Swellow","Pelipper","Masquerain","Masquerain","Ninjask","Gyarados","Zubat","Crobat","Golbat","Doduo","Dodrio","Natu","Xatu","Salamence", "Wingull", "Taillow", "Swablu", "Tropius", "Skarmory"],
+                "Psychic": ["Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Spoink", "Grumpig", "Meditite", "Medicham", "Baltoy", "Claydol", "Starmie", "Chingling", "Lunatone", "Solrock", "Chimecho", "Wynaut", "Wobbuffet", "Girafarig", "Beldum", "Metang", "Metagross"],
+                "Bug": ["Surskit", "Nincada", "Volbeat", "Illumise", "Anorith", "Shuckle","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Masquerain","Ninjask","Shedinja","Armaldo","Pinsir","Heracross"],
+                "Rock": ["Geodude","Graveler","Golem","Nosepass","Probopass", "Aron","Lairon","Aggron","Magcargo", "Solrock", "Lunatone", "Corsola", "Relicanth","Lileep","Cradily","Anorith","Armaldo","Rhyhorn","Rhydon","Rhyperior"],
+                "Ghost": ["Shuppet", "Duskull", "Sableye", "Banette", "Dusclops","Shedinja","Banette","Dusknoir","Froslass"],
+                "Dragon": ["Bagon","Shelgon","Salamence", "Altaria", "Vibrava","Flygon","Kingdra"],
+                "Steel": ["Aron", "Magnemite", "Skarmory", "Beldum", "Mawile","Probopass","Lairon","Aggron","Metang","Metagross","Magneton","Magnezone",""],
+                "Dark": ["Poochyena", "Absol", "Carvanha", "Sableye","Crawdaunt", "Sharpedo","Cacturne","Shiftry","Nuzleaf","Mightyena"],
+                "Fairy": ["Ralts", "Jigglypuff", "Azurill", "Mawile","Wigglytuff","Jigglypuff","Igglybuff","Azumarill","Marill","Gardevoir","Kirlia",]
+            },
+            "Pokémon Alpha Sapphire": {
+                "Normal": ["Zigzagoon","Linoone","vigoroth","Slaking","Taillow","Swellow","Loudred","Exploud","Azurill","Marill","Delcatty","Doduo","Dodrio","Zangoose","Igglybuff","Jigglypuff","Wigglytuff","Girafarig","Slakoth", "Whismur", "Skitty", "Kecleon", "Plusle", "Minun", "Castform", "Spinda", "Swablu"],
+                "Fire": ["Torchic","Combusken","Blaziken","Camerupt","Magcargo","Ninetales","Numel", "Torkoal", "Slugma", "Vulpix"],
+                "Water": ["Mudkip","Marshtomp","Swampert","Lombre","Ludicolo","Pelipper","Goldeen","Seaking","Magikarp","Gyarados","Marill","Azumarill","Tentacool","Tentacruel","Carvanha","Sharpedo","Wailmer","Wailord","Whiscash","Crawdaunt","Feebas","Milotic","Staryu","Starmie","Psyduck","Golduck","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Corsola","Chinchou","Lanturn","Luvdisc","Horsea","Kingdra","Seadra","Wingull", "Pelipper", "Lotad", "Surskit", "Corphish", "Barboach", "Wailmer", "Relicanth"],
+                "Grass": ["Treecko","Grovyle","Sceptile","Lombre","Ludicolo","Nuzleaf","Shiftry","Breloom","Gloom","Vileplume","Bellossom","Budew","Roserade","Cacnea","Cacturne","Lileep","Cradily","Tropius", "Shroomish", "Oddish", "Lotad", "Seedot", "Roselia"],
+                "Electric": ["Pikachu", "Raichu","Plusle","Minun","Voltorb","Electrode","Pichu","Pikachu","Raichu","Chinchou","Lanturn","Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom"],
+                "Ice": ["Snorunt","Glalie","Froslass","Spheal", "Sealeo", "Walrein",],
+                "Fighting": ["Makuhita","Combusken","Blaziken", "Meditite", "Breloom", "Hariyama","Gallade","Machop","Machamp","Machoke","Medicham","Heracross"],
+                "Poison": ["Gulpin", "Grimer", "Koffing", "Oddish", "Tentacool","Dustox","Zubat","Golbat","Crobat","Tentacruel","Gloom","Vileplume","Budew","Roselia","Roserade","Swalot","Muk","Weezing","Seviper"],
+                "Ground": ["Marshtomp","Swampert","Nincada","Geodude","Graveler","Golem","Camerupt","Sandslash","Vibrava","Flygon","Barboach","Whiscash","Baltoy","Claydol","Phanpy","Donphan","Rhyhorn","Rhydon","Rhyperior", "Trapinch", "Baltoy", "Diglett", "Sandshrew", "Numel", "Larvitar"],
+                "Flying": ["Beautifly","Swellow","Pelipper","Masquerain","Masquerain","Ninjask","Gyarados","Zubat","Crobat","Golbat","Doduo","Dodrio","Natu","Xatu","Salamence", "Wingull", "Taillow", "Swablu", "Tropius", "Skarmory"],
+                "Psychic": ["Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Spoink", "Grumpig", "Meditite", "Medicham", "Baltoy", "Claydol", "Starmie", "Chingling", "Lunatone", "Solrock", "Chimecho", "Wynaut", "Wobbuffet", "Girafarig", "Beldum", "Metang", "Metagross"],
+                "Bug": ["Surskit", "Nincada", "Volbeat", "Illumise", "Anorith", "Shuckle","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Masquerain","Ninjask","Shedinja","Armaldo","Pinsir","Heracross"],
+                "Rock": ["Geodude","Graveler","Golem","Nosepass","Probopass", "Aron","Lairon","Aggron","Magcargo", "Solrock", "Lunatone", "Corsola", "Relicanth","Lileep","Cradily","Anorith","Armaldo","Rhyhorn","Rhydon","Rhyperior"],
+                "Ghost": ["Shuppet", "Duskull", "Sableye", "Banette", "Dusclops","Shedinja","Banette","Dusknoir","Froslass"],
+                "Dragon": ["Bagon","Shelgon","Salamence", "Altaria", "Vibrava","Flygon","Kingdra"],
+                "Steel": ["Aron", "Magnemite", "Skarmory", "Beldum", "Mawile","Probopass","Lairon","Aggron","Metang","Metagross","Magneton","Magnezone",""],
+                "Dark": ["Poochyena", "Absol", "Carvanha", "Sableye","Crawdaunt", "Sharpedo","Cacturne","Shiftry","Nuzleaf","Mightyena"],
+                "Fairy": ["Ralts", "Jigglypuff", "Azurill", "Mawile","Wigglytuff","Jigglypuff","Igglybuff","Azumarill","Marill","Gardevoir","Kirlia",]
+            },
+            "Pokémon Moon": {
+                "Normal": ["Yungoos","Trumbeak","Raticate","Ratata","Happiny","Chansey","Blissey","Munchlax","Snorlax","Smeargle","Spearow","Fearow","Rufflet","Braviary","Spinda","Lillipup","Herdier","Stoutland","Eevee","Igglybuff","Jigglypuff","Wigglytuff","Tauros","Miltank","Fletchling","Kangaskhan","Stufful","Bewear","Oranguru","Castform","Ditto","Porygon","Porygon2","Porygon-Z","Drampa","Pikipek", "Lillipup", "Komala", "Stufful", "Toucannon", "Gumshoos"],
+                "Fire": ["Litten", "Salandit", "Growlithe", "Fletchling", "Magmar", "Arcanine"],
+                "Water": ["Popplio", "Wishiwashi", "Mareanie", "Wimpod", "Bruxish", "Lapras", "Tentacool"],
+                "Grass": ["Rowlet", "Morelull", "Fomantis", "Grubbin", "Cutiefly", "Exeggutor (Alolan)"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Togedemaru", "Charjabug", "Grubbin", "Raichu (Alolan)"],
+                "Ice": ["Vulpix (Alolan)", "Snorunt", "Vanillite", "Crabominable", "Vanillish", "Vanilluxe", "Cryogonal", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Crabrawler", "Makuhita", "Pangoro", "Passimian", "Hariyama", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Salandit", "Tentacool", "Grimer (Alolan)", "Mareanie", "Nihilego"],
+                "Ground": ["Diglett (Alolan)", "Mudbray", "Sandygast", "Gible", "Rhyhorn"],
+                "Flying": ["Pikipek", "Fletchling", "Wingull", "Oricorio", "Minior", "Fearow"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle"],
+                "Bug": ["Grubbin", "Cutiefly", "Ledian", "Parasect", "Pinsir", "Golisopod"],
+                "Rock": ["Rockruff", "Lycanroc", "Minior", "Geodude (Alolan)", "Carbink"],
+                "Ghost": ["Gastly", "Mimikyu", "Sandygast", "Sableye", "Dhelmise"],
+                "Dragon": ["Gible", "Dratini", "Goomy", "Jangmo-o", "Kommo-o", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Magnemite", "Klink", "Togedemaru", "Dugtrio (Alolan)"],
+                "Dark": ["Yungoos", "Poochyena", "Alolan Rattata", "Inkay", "Zorua", "Umbreon", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Pangoro", "Scraggy", "Scrafty", "Absol", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Sneasel", "Weavile", "Tyranitar", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Cutiefly", "Morelull", "Clefairy", "Ribombee", "Togedemaru", "Tapu Lele", "Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Sun": {
+                "Normal": ["Yungoos", "Pikipek", "Lillipup", "Komala", "Stufful", "Toucannon", "Gumshoos"],
+                "Fire": ["Litten", "Salandit", "Growlithe", "Fletchling", "Magmar", "Arcanine"],
+                "Water": ["Popplio", "Wishiwashi", "Mareanie", "Wimpod", "Bruxish", "Lapras", "Tentacool"],
+                "Grass": ["Rowlet", "Morelull", "Fomantis", "Grubbin", "Cutiefly", "Exeggutor (Alolan)"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Togedemaru", "Charjabug", "Grubbin", "Raichu (Alolan)"],
+                "Ice": ["Vulpix (Alolan)", "Snorunt", "Vanillite", "Crabominable", "Vanillish", "Vanilluxe", "Cryogonal", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Crabrawler", "Makuhita", "Pangoro", "Passimian", "Hariyama", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Salandit", "Tentacool", "Grimer (Alolan)", "Mareanie", "Nihilego"],
+                "Ground": ["Diglett (Alolan)", "Mudbray", "Sandygast", "Gible", "Rhyhorn"],
+                "Flying": ["Pikipek", "Fletchling", "Wingull", "Oricorio", "Minior", "Fearow"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle"],
+                "Bug": ["Grubbin", "Cutiefly", "Ledian", "Parasect", "Pinsir", "Golisopod"],
+                "Rock": ["Rockruff", "Lycanroc", "Minior", "Geodude (Alolan)", "Carbink"],
+                "Ghost": ["Gastly", "Mimikyu", "Sandygast", "Sableye", "Dhelmise"],
+                "Dragon": ["Gible", "Dratini", "Goomy", "Jangmo-o", "Kommo-o", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Magnemite", "Klink", "Togedemaru", "Dugtrio (Alolan)"],
+                "Dark": ["Yungoos", "Poochyena", "Alolan Rattata", "Inkay", "Zorua", "Umbreon", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Pangoro", "Scraggy", "Scrafty", "Absol", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Sneasel", "Weavile", "Tyranitar", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Cutiefly", "Morelull", "Clefairy", "Ribombee", "Togedemaru", "Tapu Lele", "Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Sword": {
+                "Normal": ["Wooloo", "Skwovet", "Rookidee", "Pidove", "Obstagoon", "Dubwool"],
+                "Fire": ["Scorbunny", "Carkol", "Sizzlipede", "Centiskorch", "Heatmor", "Darumaka (Galarian)"],
+                "Water": ["Sobble", "Drednaw", "Arrokuda", "Barraskewda", "Cramorant", "Lapras", "Wishiwashi"],
+                "Grass": ["Grookey", "Gossifleur", "Eldegoss", "Applin", "Flapple", "Gloom"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Yamper", "Toxtricity", "Morpeko", "Joltik", "Boltund"],
+                "Ice": ["Snom", "Frosmoth", "Eiscue", "Galarian Darumaka", "Mr. Rime", "Vanillite", "Vanillish", "Vanilluxe", "Cryogonal", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Clobbopus", "Grapploct", "Sirfetch'd", "Pangoro", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Pancham", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Croagunk", "Toxicroak", "Salandit", "Nihilego", "Toxtricity"],
+                "Ground": ["Sandaconda", "Diglett", "Rhyhorn", "Trapinch", "Mudbray"],
+                "Flying": ["Rookidee", "Corvisquire", "Corviknight", "Wingull", "Cramorant", "Vullaby"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle"],
+                "Bug": ["Blipbug", "Dottler", "Orbeetle", "Sizzlipede", "Centiskorch", "Joltik"],
+                "Rock": ["Rolycoly", "Carkol", "Coalossal", "Drednaw", "Stonjourner"],
+                "Ghost": ["Dreepy", "Cursola", "Polteageist", "Gastly", "Mimikyu"],
+                "Dragon": ["Dreepy", "Drakloak", "Dragapult", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Corviknight", "Ferrothorn", "Klink", "Bronzor", "Durant"],
+                "Dark": ["Impidimp", "Morgrem", "Grimmsnarl", "Pangoro", "Obstagoon", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Scraggy", "Scrafty", "Absol", "Inkay", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Umbreon", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Sneasel", "Weavile", "Tyranitar", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Hatenna", "Indeedee", "Morgrem", "Grimmsnarl", "Togepi", "Alcremie", "Flabebe", "Floette", "Florges", "Sylveon", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Scarlet": {
+                "Normal": ["Lechonk", "Fidough", "Pawmi", "Tandemaus", "Maushold", "Bombirdier", "Cyclizar"],
+                "Fire": ["Fuecoco", "Charcadet", "Armarouge", "Skeledirge", "Scovillain", "Growlithe", "Larvesta"],
+                "Water": ["Quaxly", "Finizen", "Palafin", "Veluza", "Wiglett", "Dondozo", "Gyarados"],
+                "Grass": ["Smoliv", "Dolliv", "Arboliva", "Capsakid", "Scovillain", "Sprigatito", "Brambleghast"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Pawmi", "Pawmo", "Pawmot", "Wattrel", "Kilowattrel", "Tadbulb", "Bellibolt"],
+                "Ice": ["Cetoddle", "Cetitan", "Frigibax", "Baxcalibur", "Cryogonal", "Vanillite", "Vanillish", "Vanilluxe", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Pawmo", "Pawmot", "Annihilape", "Koraidon", "Great Tusk", "Quaquaval", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Pancham", "Pangoro", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Grafaiai", "Shroodle", "Glimmet", "Glimmora", "Varoom", "Revavroom"],
+                "Ground": ["Koraidon", "Great Tusk", "Donphan", "Hippopotas", "Dugtrio"],
+                "Flying": ["Squawkabilly", "Wattrel", "Kilowattrel", "Bombirdier", "Corviknight"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle", "Espathra", "Flittle", "Farigiraf", "Indeedee"],
+                "Bug": ["Tarountula", "Spidops", "Nymble", "Lokix", "Slither Wing"],
+                "Rock": ["Klawf", "Nacli", "Naclstack", "Garganacl", "Tyranitar"],
+                "Ghost": ["Greavard", "Houndstone", "Flutter Mane", "Gengar", "Banette"],
+                "Dragon": ["Cyclizar", "Frigibax", "Baxcalibur", "Garchomp", "Salamence", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Goomy", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dratini", "Dragonair", "Dragonite"],
+                "Steel": ["Tinkatink", "Tinkatuff", "Tinkaton", "Orthworm", "Varoom", "Revavroom"],
+                "Dark": ["Meowscarada", "Lokix", "Mabosstiff", "Bombirdier", "Tyranitar", "Sneasel", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Pangoro", "Scraggy", "Scrafty", "Absol", "Inkay", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Umbreon", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Weavile", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Fidough", "Dachsbun", "Tinkatink", "Tinkatuff", "Tinkaton", "Florges", "Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Violet": {
+                "Normal": ["Lechonk", "Fidough", "Pawmi", "Tandemaus", "Maushold", "Bombirdier", "Cyclizar"],
+                "Fire": ["Fuecoco", "Charcadet", "Ceruledge", "Skeledirge", "Scovillain", "Growlithe", "Larvesta"],
+                "Water": ["Quaxly", "Finizen", "Palafin", "Veluza", "Wiglett", "Dondozo", "Gyarados"],
+                "Grass": ["Smoliv", "Dolliv", "Arboliva", "Capsakid", "Scovillain", "Sprigatito", "Brambleghast"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Pawmi", "Pawmo", "Pawmot", "Wattrel", "Kilowattrel", "Tadbulb", "Bellibolt"],
+                "Ice": ["Cetoddle", "Cetitan", "Frigibax", "Baxcalibur", "Cryogonal", "Vanillite", "Vanillish", "Vanilluxe", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Pawmo", "Pawmot", "Annihilape", "Miraidon", "Iron Hands", "Quaquaval", "Machop", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Pancham", "Pangoro", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Grafaiai", "Shroodle", "Glimmet", "Glimmora", "Varoom", "Revavroom"],
+                "Ground": ["Miraidon", "Iron Treads", "Donphan", "Hippopotas", "Dugtrio"],
+                "Flying": ["Squawkabilly", "Wattrel", "Kilowattrel", "Bombirdier", "Corviknight"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle", "Espathra", "Flittle", "Farigiraf", "Indeedee"],
+                "Bug": ["Tarountula", "Spidops", "Nymble", "Lokix", "Iron Moth"],
+                "Rock": ["Klawf", "Nacli", "Naclstack", "Garganacl", "Tyranitar"],
+                "Ghost": ["Greavard", "Houndstone", "Iron Bundle", "Gengar", "Banette"],
+                "Dragon": ["Cyclizar", "Frigibax", "Baxcalibur", "Garchomp", "Salamence", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Goomy", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dratini", "Dragonair", "Dragonite"],
+                "Steel": ["Tinkatink", "Tinkatuff", "Tinkaton", "Orthworm", "Varoom", "Revavroom"],
+                "Dark": ["Meowscarada", "Lokix", "Mabosstiff", "Bombirdier", "Tyranitar", "Sneasel", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Pangoro", "Scraggy", "Scrafty", "Absol", "Inkay", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Umbreon", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Murkrow", "Honchkrow", "Weavile", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Fidough", "Dachsbun", "Tinkatink", "Tinkatuff", "Tinkaton", "Florges", "Flabebe", "Floette", "Florges", "Sylveon", "Togepi", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+            "Pokémon Legends: Arceus": {
+                "Normal": ["Starly", "Bidoof", "Eevee", "Teddiursa", "Ursaring", "Hisuian Lilligant", "Porygon"],
+                "Fire": ["Cyndaquil", "Magby", "Ponyta", "Hisuian Growlithe", "Hisuian Arcanine", "Magmortar"],
+                "Water": ["Oshawott", "Piplup", "Remoraid", "Mantyke", "Qwilfish (Hisuian)", "Basculin", "Vaporeon"],
+                "Grass": ["Rowlet", "Petilil", "Tangela", "Cherubi", "Hisuian Lilligant", "Torterra"],
+                "Electric": ["Pikachu", "Raichu", "Electrike", "Manectric", "Emolga", "Dedenne", "Magnemite", "Magneton", "Magnezone", "Pachirisu", "Chinchou", "Lanturn", "Rotom", "Pichu", "Electabuzz", "Jolteon", "Luxray"],
+                "Ice": ["Snorunt", "Bergmite", "Glaceon", "Walrein", "Froslass", "Vanillite", "Vanillish", "Vanilluxe", "Cryogonal", "Spheal", "Sealeo", "Walrein", "Lapras", "Swinub", "Piloswine", "Mamoswine", "Smoochum", "Jynx", "Delibird", "Snover", "Abomasnow", "Sneasel", "Weavile"],
+                "Fighting": ["Riolu", "Croagunk", "Machop", "Hisuian Sneasel", "Infernape", "Machoke", "Machamp", "Mankey", "Primeape", "Tyrogue", "Hitmonlee", "Hitmonchan", "Hitmontop", "Hawlucha", "Meditite", "Medicham", "Scraggy", "Scrafty", "Heracross", "Lucario", "Pancham", "Pangoro", "Breloom", "Gurdurr", "Conkeldurr"],
+                "Poison": ["Zubat", "Croagunk", "Stunky", "Gengar", "Sneasler"],
+                "Ground": ["Rhyhorn", "Hippopotas", "Gible", "Phanpy", "Mamoswine", "Ursaluna"],
+                "Flying": ["Starly", "Murkrow", "Hisuian Decidueye", "Crobat", "Togekiss", "Mantine"],
+                "Psychic": ["Delphox", "Ralts", "Kirlia", "Gardevoir", "Gallade", "Abra", "Kadabra", "Alakazam", "Espurr", "Meowstic", "Meditite", "Medicham", "Spoink", "Grumpig", "Inkay", "Malamar", "Lunatone", "Solrock", "Starmie", "Woobat", "Swoobat", "Espeon", "Sigilyph", "Chingling", "Chimecho", "Mime Jr.", "Mr. Mime", "Solosis", "Duosion", "Reuniclus", "Wynaut", "Wobbuffet", "Slowpoke", "Slowbro", "Slowking", "Exeggcute", "Exeggutor", "Smoochum", "Jynx", "Gothita", "Gothorita", "Gothitelle", "Bronzor", "Cresselia", "Wyrdeer"],
+                "Bug": ["Scyther", "Heracross", "Wurmple", "Kricketot", "Sneasel", "Kleavor"],
+                "Rock": ["Geodude", "Onix", "Rhyhorn", "Gligar", "Hisuian Arcanine", "Rampardos"],
+                "Ghost": ["Gastly", "Drifloon", "Spiritomb", "Froslass", "Hisuian Typhlosion"],
+                "Dragon": ["Gible", "Goomy", "Dratini", "Goodra (Hisuian)", "Dialga", "Palkia", "Axew", "Fraxure", "Haxorus", "Bagon", "Shelgon", "Salamence", "Dragalge", "Kingdra", "Tyrunt", "Tyrantrum", "Vibrava", "Flygon", "Gabite", "Garchomp", "Sliggoo", "Goodra", "Noibat", "Noivern", "Altaria", "Druddigon", "Deino", "Zweilous", "Hydreigon", "Dragonair", "Dragonite"],
+                "Steel": ["Magnemite", "Bronzor", "Lucario", "Scizor", "Bastiodon", "Heatran"],
+                "Dark": ["Murkrow", "Weavile", "Sneasel (Hisuian)", "Umbreon", "Spiritomb", "Greninja", "Crawdaunt", "Carvanha", "Sharpedo", "Pangoro", "Scraggy", "Scrafty", "Absol", "Inkay", "Malamar", "Sandile", "Krokorok", "Krookodile", "Houndour", "Houndoom", "Stunky", "Skuntank", "Sableye", "Drapion", "Purrloin", "Liepard", "Poochyena", "Mightyena", "Pawniard", "Bisharp", "Honchkrow", "Sneasel", "Tyranitar", "Zorua", "Zoroark", "Deino", "Zweilous", "Hydreigon"],
+                "Fairy": ["Pichu", "Clefairy", "Togepi", "Sylveon", "Froslass", "Flabebe", "Floette", "Florges", "Togetic", "Togekiss", "Mr. Mime", "Gardevoir", "Mawile", "Azurill", "Marill", "Azumarill", "Dedenne", "Clefairy", "Clefable", "Jigglypuff", "Wigglytuff", "Snubbull", "Granbull"]
+            },
+        };
+
+        const wheel = document.getElementById("inner-wheel");
+        const spinButton = document.getElementById("spin");
+        const resultDiv = document.getElementById("result");
+        const gameButtons = document.querySelectorAll('.game-btn');
+        const typeWheel = document.getElementById("type-inner-wheel");
+        const spinTypeButton = document.getElementById("spin-type");
+        const rouletteContainer = document.getElementById("roulette-container");
+        const typeRouletteContainer = document.getElementById("type-roulette-container");
+        const allPokemonRoulettesContainer = document.getElementById("all-pokemon-roulettes");
+
+
+        gameButtons.forEach(gameButton => {
+            gameButton.addEventListener('click', () => {
+                selectedGame = gameButton.dataset.game;
+                hideGameSelection();
+                showRoulette();
+            });
+        });
+
+        function hideGameSelection() {
+            document.querySelector('h1').style.display = 'none';
+            document.querySelector('.game-grid').style.display = 'none';
+            document.querySelectorAll('.corner').forEach(corner => corner.style.display = 'none'); 
+        }
+
+        function showRoulette() {
+            rouletteContainer.style.display = 'flex';
+            resultDiv.style.display = "none"; 
+            resultDiv.innerHTML = '<span></span>'; 
+            hasSpun = false; 
+            spinButton.onclick = spinwheel; 
+            wheel.style.transition = `none`; 
+            wheel.style.transform = `rotate(0deg)`; 
+            rotation = 0; 
+            allPokemonRoulettesContainer.style.display = 'none';
+            document.querySelectorAll('.pokemon-roulette-container').forEach(container => {
+                container.style.display = 'none';
+            });
+        }
+
+        function spinwheel() {
+            if (hasSpun) return;
+            hasSpun = true;
+
+            spinButton.onclick = null; 
+
+            const totalSections = 4;
+            const degreesPerSection = 360 / totalSections;
+            const spins = Math.floor(Math.random() * 5) + 5;
+            const randomExtra = Math.floor(Math.random() * 360);
+
+            rotation += spins * 360 + randomExtra;
+            wheel.style.transition = `transform 4s cubic-bezier(0.33, 1, 0.68, 1)`;
+            wheel.style.transform = `rotate(${rotation}deg)`;
+
+            setTimeout(() => {
+                const normalizedAngle = (360 - (rotation % 360)) % 360;
+                let selectedIndex = 0;
+                if (normalizedAngle >= 0 && normalizedAngle < 90) {
+                    selectedIndex = 0; 
+                } else if (normalizedAngle >= 90 && normalizedAngle < 180) {
+                    selectedIndex = 1; 
+                } else if (normalizedAngle >= 180 && normalizedAngle < 270) {
+                    selectedIndex = 2; 
+                } else { 
+                    selectedIndex = 3; 
+                }
+
+                const finalLabels = ["Shiny Run", "Monotype", "Nuzlocke", "Normal"];
+                const resultText = "Jogo: " + selectedGame + "<br>Modo: " + finalLabels[selectedIndex];
+                resultDiv.querySelector('span').innerHTML = resultText;
+                resultDiv.style.display = "inline-block";
+
+                resultDiv.querySelectorAll('.game-btn').forEach(btn => btn.remove());
+                resultDiv.querySelectorAll('.go-back-btn').forEach(btn => btn.remove()); 
+
+                if (finalLabels[selectedIndex] === "Monotype") {
+                    showTypeRoulette();
+                } else {
+                    const playAgainButton = document.createElement('button');
+                    playAgainButton.textContent = 'Jogar Novamente';
+                    playAgainButton.classList.add('game-btn');
+                    playAgainButton.style.marginTop = '20px';
+                    playAgainButton.onclick = () => {
+                        location.reload();
+                    };
+                    resultDiv.appendChild(playAgainButton);
+                }
+                spinButton.onclick = spinwheel; 
+                hasSpun = false;
+            }, 4000);
+        }
+
+        function showTypeRoulette() {
+            rouletteContainer.style.display = 'none';
+            typeRouletteContainer.style.display = 'flex';
+            resultDiv.style.display = "none"; 
+            resultDiv.innerHTML = '<span></span>'; 
+            hasTypeSpun = false; 
+            spinTypeButton.onclick = spinTypeWheel; 
+            typeWheel.style.transition = `none`;
+            typeWheel.style.transform = `rotate(0deg)`; 
+            typeRotation = 0; 
+            allPokemonRoulettesContainer.style.display = 'none';
+            document.querySelectorAll('.pokemon-roulette-container').forEach(container => {
+                container.style.display = 'none';
+            });
+        }
+
+        function spinTypeWheel() {
+            if (hasTypeSpun) return;
+            hasTypeSpun = true;
+            spinTypeButton.onclick = null; 
+
+            const totalTypes = 18;
+            const degreesPerType = 360 / totalTypes;
+            const typeSpins = Math.floor(Math.random() * 5) + 5; 
+            const typeRandomExtra = Math.floor(Math.random() * 360);
+
+            typeRotation += typeSpins * 360 + typeRandomExtra;
+            typeWheel.style.transition = `transform 4s cubic-bezier(0.33, 1, 0.68, 1)`;
+            typeWheel.style.transform = `rotate(${typeRotation}deg)`;
+
+            setTimeout(() => {
+                const finalTypeAngle = typeRotation % 360;
+                const normalizedAngle = (360 - (typeRotation % 360)) % 360;
+                let selectedTypeIndex = 0;
+                selectedTypeIndex = Math.floor(normalizedAngle / degreesPerType);
+
+                const typeLabels = [
+                    "Normal", "Rock", "Psychic", "Fire", "Grass", "Fighting", "Poison", "Flying",
+                    "Water", "Bug", "Electric", "Ground", "Ice", "Steel", "Fairy", "Dragon", "Dark", "Ghost"
+                ];
+                const selectedType = typeLabels[selectedTypeIndex];
+                const resultTypeText = "Jogo: " + selectedGame + "<br>Modo: Monotype<br>Tipo: " + selectedType;
+                resultDiv.querySelector('span').innerHTML = resultTypeText;
+                resultDiv.style.display = "inline-block";
+
+                resultDiv.querySelectorAll('.game-btn').forEach(btn => btn.remove());
+                resultDiv.querySelectorAll('.go-back-btn').forEach(btn => btn.remove());
+
+
+                if (kalosPokemonByRegionAndType[selectedGame] && kalosPokemonByRegionAndType[selectedGame][selectedType] && kalosPokemonByRegionAndType[selectedGame][selectedType].length > 0) {
+                    typeRouletteContainer.style.display = 'none'; 
+                    generatePokemonTypeWheel(selectedType, kalosPokemonByRegionAndType[selectedGame][selectedType]);
+                    showPokemonTypeWheel(selectedType); 
+                } else {
+                    resultDiv.querySelector('span').innerHTML += `<br>Não há Pokémon do tipo ${selectedType} listados para ${selectedGame}.`;
+
+                    const backButton = document.createElement('button');
+                    backButton.textContent = 'Tentar Outro Tipo';
+                    backButton.classList.add('go-back-btn');
+                    backButton.style.marginTop = '20px';
+                    backButton.onclick = () => {
+                        typeRouletteContainer.style.display = 'flex'; 
+                        resultDiv.style.display = 'none'; 
+                        hasTypeSpun = false; 
+                        spinTypeButton.onclick = spinTypeWheel; 
+                        typeWheel.style.transition = `none`; 
+                        typeWheel.style.transform = `rotate(0deg)`; 
+                        typeRotation = 0;
+                    };
+                    resultDiv.appendChild(backButton);
+
+                    const restartGameButton = document.createElement('button');
+                    restartGameButton.textContent = 'Escolher Outro Jogo';
+                    restartGameButton.classList.add('game-btn');
+                    restartGameButton.style.marginTop = '20px';
+                    restartGameButton.style.marginLeft = '10px';
+                    restartGameButton.onclick = () => {
+                        location.reload(); 
+                    };
+                    resultDiv.appendChild(restartGameButton);
+
+                    spinTypeButton.onclick = spinTypeWheel; 
+                    hasTypeSpun = false; 
+                }
+            }, 4000);
+        }
+
+       
+        let currentPokemonRotation = {};
+        let currentPokemonSpunState = {};
+
+        function generatePokemonTypeWheel(type, pokemonList) {
+            const containerId = `pokemon-roulette-container-${type.toLowerCase().replace(/\s/g, '')}`;
+            let existingContainer = document.getElementById(containerId);
+
+            if (existingContainer) {
+                existingContainer.innerHTML = '';
+            } else {
+                existingContainer = document.createElement('div');
+                existingContainer.id = containerId;
+                existingContainer.classList.add('pokemon-roulette-container');
+                allPokemonRoulettesContainer.appendChild(existingContainer);
+            }
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('pokemon-wrapper');
+
+            const arrow = document.createElement('div');
+            arrow.classList.add('pokemon-arrow');
+
+            const wheelDiv = document.createElement('div');
+            wheelDiv.classList.add('pokemon-wheel');
+            wheelDiv.id = `pokemon-wheel-${type.toLowerCase().replace(/\s/g, '')}`;
+
+            const innerWheel = document.createElement('div');
+            innerWheel.classList.add('pokemon-inner-wheel');
+            innerWheel.id = `pokemon-inner-wheel-${type.toLowerCase().replace(/\s/g, '')}`;
+            innerWheel.style.transition = `none`;
+            innerWheel.style.transform = `rotate(0deg)`;
+
+            const totalPokemon = pokemonList.length;
+            const degreesPerPokemon = 360 / totalPokemon;
+            let gradientString = '';
+            const colors = [
+                "#FF6B6B", "#42A5F5", "#66BB6A", "#FFEB3B", "#A8A878", "#B8A038", "#F85888", "#F08030",
+                "#78C850", "#C03028", "#A040A0", "#A890F0", "#6890F0", "#A8B820", "#F8D030", "#E0C068",
+                "#98D8D8", "#B8B8D0", "#EE99EE", "#7038F8", "#705848", "#705898"
+            ];
+            for (let i = 0; i < totalPokemon; i++) {
+                const startAngle = i * degreesPerPokemon;
+                const endAngle = (i + 1) * degreesPerPokemon;
+                const colorIndex = i % colors.length;
+                gradientString += `${colors[colorIndex]} ${startAngle}deg ${endAngle}deg`;
+                if (i < totalPokemon - 1) {
+                    gradientString += ', ';
+                }
+            }
+            innerWheel.style.background = `conic-gradient(${gradientString})`;
+
+            const labelContainer = document.createElement('div');
+            labelContainer.classList.add('pokemon-label-container');
+
+            pokemonList.forEach((pokemon, index) => {
+                const label = document.createElement('div');
+                label.classList.add('pokemon-label');
+                label.textContent = pokemon;
+                const angle = (index * degreesPerPokemon) + (degreesPerPokemon / 2); 
+                
+           
+                const radius = 180; 
+                const distanceFactor = 0.85;
+                const labelY = -radius * distanceFactor; 
+                
+                label.style.transform = `rotate(${angle}deg) translateY(${labelY}px) rotate(${-angle}deg)`;
+                
+                let fontSize = 12;
+                if (totalPokemon > 15 && totalPokemon <= 30) {
+                    fontSize = 10;
+                } else if (totalPokemon > 30 && totalPokemon <= 50) {
+                    fontSize = 8;
+                } else if (totalPokemon > 50) {
+                    fontSize = 6;
+                }
+                label.style.fontSize = `${fontSize}px`;
+                
+                labelContainer.appendChild(label);
+            });
+
+            const spinButtonPokemon = document.createElement('div');
+            spinButtonPokemon.classList.add('spin-pokemon');
+            spinButtonPokemon.textContent = 'Girar';
+            spinButtonPokemon.onclick = () => spinPokemonWheel(type, pokemonList);
+
+
+            wheelDiv.appendChild(innerWheel);
+            innerWheel.appendChild(labelContainer);
+            wheelDiv.appendChild(spinButtonPokemon);
+            wrapper.appendChild(arrow);
+            wrapper.appendChild(wheelDiv);
+            existingContainer.appendChild(wrapper);
+
+            const resultPokemonDiv = document.createElement('div');
+            resultPokemonDiv.id = `result-pokemon-${type.toLowerCase().replace(/\s/g, '')}`;
+            resultPokemonDiv.classList.add('result-pokemon');
+            resultPokemonDiv.innerHTML = `<span></span><img src="" alt="Pokémon Sprite" style="display:none;">`; // Adiciona o img
+            existingContainer.appendChild(resultPokemonDiv);
+
+            currentPokemonRotation[type] = 0;
+            currentPokemonSpunState[type] = false;
+        }
+
+        function showPokemonTypeWheel(type) {
+            document.querySelectorAll('.pokemon-roulette-container').forEach(container => {
+                container.style.display = 'none';
+            });
+            allPokemonRoulettesContainer.style.display = 'flex';
+
+            const targetPokemonRoulette = document.getElementById(`pokemon-roulette-container-${type.toLowerCase().replace(/\s/g, '')}`);
+            if (targetPokemonRoulette) {
+                targetPokemonRoulette.style.display = 'flex';
+                resultDiv.style.display = 'none';
+                const resultPokemonDiv = document.getElementById(`result-pokemon-${type.toLowerCase().replace(/\s/g, '')}`);
+                if (resultPokemonDiv) {
+                    resultPokemonDiv.querySelector('span').innerHTML = ''; 
+                    resultPokemonDiv.querySelector('img').style.display = 'none';
+                    resultPokemonDiv.querySelector('img').src = '';
+                    resultPokemonDiv.style.display = 'none';
+                    resultPokemonDiv.querySelectorAll('.game-btn').forEach(btn => btn.remove()); 
+                    resultPokemonDiv.querySelectorAll('.go-back-btn').forEach(btn => btn.remove()); 
+                }
+                const spinButtonPokemon = targetPokemonRoulette.querySelector('.spin-pokemon');
+                if (spinButtonPokemon) {
+                    spinButtonPokemon.onclick = () => spinPokemonWheel(type, kalosPokemonByRegionAndType[selectedGame][type]);
+                    currentPokemonSpunState[type] = false;
+                }
+            } else {
+                console.error(`Container da roleta para o tipo ${type} não encontrado.`);
+            }
+        }
+
+        function spinPokemonWheel(type, pokemonList) {
+            if (currentPokemonSpunState[type]) return;
+            currentPokemonSpunState[type] = true;
+
+            const innerWheel = document.getElementById(`pokemon-inner-wheel-${type.toLowerCase().replace(/\s/g, '')}`);
+            const spinButtonPokemon = innerWheel.parentNode.querySelector('.spin-pokemon'); // Encontrar o botão de girar específico
+            spinButtonPokemon.onclick = null;
+
+            const totalPokemon = pokemonList.length;
+            const degreesPerPokemon = 360 / totalPokemon;
+            const spins = Math.floor(Math.random() * 5) + 10; 
+            const randomExtra = Math.floor(Math.random() * 360);
+
+            currentPokemonRotation[type] += spins * 360 + randomExtra;
+            innerWheel.style.transition = `transform 6s cubic-bezier(0.33, 1, 0.68, 1)`; 
+            innerWheel.style.transform = `rotate(${currentPokemonRotation[type]}deg)`;
+
+            setTimeout(() => {
+                const finalPokemonAngle = currentPokemonRotation[type] % 360;
+                const normalizedAngle = (360 - (currentPokemonRotation[type] % 360)) % 360;
+                let selectedPokemonIndex = Math.floor(normalizedAngle / degreesPerPokemon);
+                
+                selectedPokemonIndex = Math.min(selectedPokemonIndex, totalPokemon - 1);
+
+
+                const selectedPokemon = pokemonList[selectedPokemonIndex];
+
+                const resultPokemonDiv = document.getElementById(`result-pokemon-${type.toLowerCase().replace(/\s/g, '')}`);
+                
+                resultPokemonDiv.querySelector('span').innerHTML = selectedPokemon;
+                
+                const pokemonSprite = resultPokemonDiv.querySelector('img');
+
+                let formattedPokemonName = selectedPokemon
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s\-']/g, '') 
+                    .replace(/\s+/g, '') 
+                    .replace(/\./g, '')
+                    .replace(/'/g, '')
+                    .replace(/♀/g, 'f') 
+                    .replace(/♂/g, 'm') 
+                    .replace(/é/g, 'e') 
+                    .replace(/alolan/g, '-alolan') 
+                    .replace(/galarian/g, '-galarian') 
+                    .replace(/hisuian/g, '-hisuian') 
+                    .replace(/ /g, '-'); 
+
+                if (formattedPokemonName.includes('-alolan')) {
+                    formattedPokemonName = formattedPokemonName.replace('-alolan', '_alolan');
+                } else if (formattedPokemonName.includes('-galarian')) {
+                    formattedPokemonName = formattedPokemonName.replace('-galarian', '_galarian');
+                } else if (formattedPokemonName.includes('-hisuian')) {
+                    formattedPokemonName = formattedPokemonName.replace('-hisuian', '_hisuian');
+                }
+                if (formattedPokemonName === "mr.mime") { formattedPokemonName = "mr.mime"; }
+                if (formattedPokemonName === "mimejr") { formattedPokemonName = "mimejr"; }
+                if (formattedPokemonName === "sirfetchd") { formattedPokemonName = "sirfetchd"; }
+                if (formattedPokemonName === "type:null") { formattedPokemonName = "typenull"; } 
+                if (formattedPokemonName === "jangmo-o") { formattedPokemonName = "jangmo-o"; }
+                if (formattedPokemonName === "kommo-o") { formattedPokemonName = "kommo-o"; }
+                if (formattedPokemonName === "hakamo-o") { formattedPokemonName = "hakamo-o"; }
+
+
+                const spriteUrl = `https://play.pokemonshowdown.com/sprites/gen5/${formattedPokemonName}.png`;
+                
+                pokemonSprite.src = spriteUrl;
+                pokemonSprite.alt = selectedPokemon;
+                pokemonSprite.style.display = 'block'; 
+                pokemonSprite.onerror = () => {
+                    const baseName = selectedPokemon.split(' ')[0].toLowerCase();
+                    const fallbackSpriteUrl = `https://play.pokemonshowdown.com/sprites/gen5/${baseName}.png`;
+                    pokemonSprite.src = fallbackSpriteUrl;
+                    pokemonSprite.onerror = () => {
+                        pokemonSprite.style.display = 'none';
+                        resultPokemonDiv.querySelector('span').innerHTML += `<br>Sprite não encontrado para ${selectedPokemon}.`;
+                    };
+                };
+
+                resultPokemonDiv.style.display = "flex"; 
+
+                resultPokemonDiv.querySelectorAll('.game-btn').forEach(btn => btn.remove());
+                resultPokemonDiv.querySelectorAll('.go-back-btn').forEach(btn => btn.remove()); 
+
+                const restartButton = document.createElement('button');
+                restartButton.textContent = 'Jogar Novamente';
+                restartButton.classList.add('game-btn');
+                restartButton.style.marginTop = '20px';
+                restartButton.onclick = () => {
+                    location.reload(); 
+                };
+                resultPokemonDiv.appendChild(restartButton);
+                const backToTypeButton = document.createElement('button');
+                backToTypeButton.textContent = 'Tentar Outro Tipo';
+                backToTypeButton.classList.add('go-back-btn');
+                backToTypeButton.style.marginTop = '20px';
+                backToTypeButton.style.marginLeft = '10px';
+                backToTypeButton.onclick = () => {
+                    document.getElementById(`pokemon-roulette-container-${type.toLowerCase().replace(/\s/g, '')}`).style.display = 'none';
+                    resultPokemonDiv.style.display = 'none';
+                    showTypeRoulette(); 
+                };
+                resultPokemonDiv.appendChild(backToTypeButton);
+
+
+                currentPokemonSpunState[type] = false;
+                spinButtonPokemon.onclick = () => spinPokemonWheel(type, pokemonList); 
+            }, 6000);
+        }
+    </script>
+</body>
+</html>
